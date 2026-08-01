@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#cc3900"/>
+  <g fill="none" stroke="rgba(255,247,242,0.3)" stroke-width="2">
+    <circle cx="630" cy="160" r="60"/>
+    <circle cx="630" cy="160" r="105"/>
+    <circle cx="630" cy="160" r="150"/>
+  </g>
+  <circle cx="630" cy="160" r="18" fill="rgba(255,247,242,0.9)"/>
+  <text x="48" y="86" font-family="Helvetica, Arial, sans-serif" font-size="17" letter-spacing="4" fill="rgba(255,247,242,1)">01 — FULL-STACK · WEB</text>
+  <text x="42" y="520" font-family="'Arial Narrow', 'Helvetica Neue Condensed', Impact, sans-serif" font-size="118" font-weight="700" letter-spacing="-2" fill="#fff7f2">DROPIT</text>
+  <line x1="48" y1="548" x2="752" y2="548" stroke="rgba(255,247,242,0.4)" stroke-width="2"/>
+</svg>
