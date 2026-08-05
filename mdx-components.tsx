@@ -1,5 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import { Mermaid } from "@/components/Mermaid";
+import { Todo, TodoBlock } from "@/components/Todo";
 
 function extractText(node: React.ReactNode): string {
   if (typeof node === "string") return node;
@@ -12,6 +13,8 @@ function extractText(node: React.ReactNode): string {
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
+    Todo,
+    TodoBlock,
     h2: ({ children }) => (
       <h2 className="display mt-16 mb-5 text-[clamp(1.75rem,3.5vw,2.5rem)]">{children}</h2>
     ),

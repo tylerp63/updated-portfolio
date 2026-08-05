@@ -18,16 +18,17 @@ export const projects: Project[] = [
     tag: "Full-stack · Web",
     stack: ["Next.js", "TypeScript", "Tailwind", "Supabase"],
     cover: "/work/dropit.svg",
-    // TODO: live URL — dropit.io does not resolve. See CONTENT-TODO.md.
-    links: [],
+    links: [{ label: "Live", href: "https://drop-it-lake.vercel.app/" }],
   },
   {
     slug: "studymonkey",
     title: "StudyMonkey",
     oneLiner:
-      "An AI study tool in production with real students, built on a Python model service behind a TypeScript app.",
+      "An AI study tool in production: talk with your own course documents, walk away with flashcards.",
     tag: "AI systems",
-    stack: ["Next.js", "TypeScript", "Python", "Supabase"],
+    // Only what Tyler confirmed for this project — no Next.js (he specified
+    // TypeScript), and Supabase is unconfirmed here. See CONTENT-TODO.md.
+    stack: ["TypeScript", "Python", "LangChain"],
     cover: "/work/studymonkey.svg",
     // TODO: live URL — see CONTENT-TODO.md
     links: [],
@@ -36,9 +37,9 @@ export const projects: Project[] = [
     slug: "vitaledge",
     title: "VitalEdge",
     oneLiner:
-      "A SwiftUI iOS app that streams live readings from physical hardware and rides through flaky real-world connections.",
-    tag: "iOS · Hardware",
-    stack: ["Swift", "SwiftUI"],
+      "A SwiftUI iOS app that reads your vitals from a camera recording and scores how ready you are for the day.",
+    tag: "iOS · Health",
+    stack: ["Swift", "SwiftUI", "Presage SDK"],
     cover: "/work/vitaledge.svg",
     links: [],
   },

@@ -1,42 +1,45 @@
 ## Problem
 
-[TODO: one-paragraph description of what Dropit does and for whom]
+Dropit is an ecommerce helper for people whose margin lives in the spread. It tracks a set of products across multiple domains, compares their pricing, and surfaces where the best margin is. The work it replaces is the manual version of exactly that: keeping a list of items, checking them across the same handful of sites, and redoing the arithmetic every time a price moves.
 
-What I can say plainly: Dropit is deployed at [TODO: production URL — dropit.io does not resolve] and has real users, and that fact shaped the engineering more than any technology choice did. A demo project gets to hand-wave authentication, sketch a data model, and ignore latency because nobody is waiting on it. A deployed product doesn't. Sign-in has to work every time, the schema has to survive being wrong on the first try, and every slow page is felt by a person rather than logged by a benchmark. Everything below was built under that constraint.
+The fact that shaped the engineering most isn't a technology choice. Dropit is deployed at [drop-it-lake.vercel.app](https://drop-it-lake.vercel.app/) and has real users. A demo project gets to hand-wave authentication and ignore latency, because nobody is waiting on it. A deployed product doesn't: sign-in has to work every time, and every slow page is felt by a person rather than logged by a benchmark.
 
 ## Approach
 
 The stack is deliberately boring: Next.js with the App Router, TypeScript, Tailwind, and Supabase for Postgres and auth. I picked each piece because I could ship with it and debug it, not because it was interesting.
 
-The interesting part came after launch. The first version used NextAuth with database sessions: every session lived in Postgres, so nearly every authenticated request paid a database round trip just to answer "who is this?" before doing any real work. With the App Router, that check sits in middleware and in server components, which puts it on the critical path of every page load. Auth wasn't broken — it was a tax on everything.
+The decision worth writing down is the auth migration. I moved authentication from NextAuth to Supabase Auth, and what pushed me there was auth latency. <Todo>the actual symptom and what you traced it to. NextAuth supports both JWT and database sessions, so say which you were on and why it was slow.</Todo>
 
-I migrated to Supabase Auth, which changes the session model. Supabase issues a short-lived JWT plus a refresh token; verifying a session becomes a local signature check instead of a database read, and the round trip only happens when the token needs refreshing. Since the app was already on Supabase's Postgres, moving user records into Supabase's auth schema was a data migration, not a platform switch. [TODO: one line on how existing users were transitioned — silent migration vs forced re-login]
+Some background on why the destination looked better independent of that diagnosis: Supabase Auth is token-based. It issues a short-lived JWT plus a refresh token, so verifying a session is a local signature check rather than a database read, and the network round trip only happens when the token needs refreshing. That is how the vendor works, not something I built. It also meant identity and data ended up on one platform rather than two. <Todo>how existing users were transitioned — silent migration or forced re-login.</Todo>
 
-I measured before claiming a result. I timed the auth path in isolation — middleware session resolution on the same set of authenticated routes — before and after the migration, against the deployed app rather than locally. Auth-related latency dropped 50%. Absolute timings: [TODO: before/after numbers in ms].
+After the migration, auth-related latency dropped 50%. That number is real, and it's the reason the work was worth doing. <Todo>how you measured it — what you timed, on which routes, local or deployed, plus before/after numbers in ms.</Todo>
 
 ## Architecture
 
-Next.js middleware verifies the JWT locally and passes the user through to server components and route handlers, which talk to Postgres. Supabase Auth only enters the hot path at sign-in and token refresh. Row-level security in Postgres is keyed off the user id in the JWT, so authorization lives next to the data instead of being re-implemented in every route.
+The parts are an App Router front end and Supabase providing both Postgres and auth. Supabase Auth stays off the request path except at sign-in and token refresh, which is a property of token-based auth rather than a design of mine. I've drawn the pieces and left the wiring undirected on purpose — the exact data path is one of the things I'd have to check before claiming it.
 
 ```mermaid
 flowchart LR
-  B[Browser] --> MW[Next.js middleware]
-  MW -->|JWT verified locally| SC[Server components]
-  SC --> RH[Route handlers]
-  RH --> PG[(Supabase Postgres)]
-  B -->|sign in / refresh| SA[Supabase Auth]
-  SA -->|issues JWT and refresh token| B
-  SA -.-> PG
+  U[User] --> APP[Next.js App Router]
+  APP --- SB[Supabase]
+  SB --- PG[(Postgres)]
+  SB --- AUTH[Auth: JWT + refresh token]
 ```
+
+Three things belong on that diagram and aren't there, because I'd rather leave a box empty than draw a design I haven't verified. <Todo>what actually reads and writes Postgres — the server side, or the browser through the Supabase client.</Todo> <Todo>where session verification runs — middleware, server components, or both.</Todo> <Todo>where authorization is enforced — row-level security in Postgres, checks in route handlers, or a mix.</Todo> Between them that's the whole request-and-authorization story.
 
 ## Key tradeoff
 
-Moving from database sessions to JWTs trades revocation for speed. A database session can be killed instantly — delete the row and the user is out. A JWT stays valid until it expires, no matter what happens to the account in the meantime. I accepted that because access tokens are short-lived ([TODO: token lifetime]) and refresh rotation means a compromised session dies within one token window — an acceptable blast radius for this product.
+Token-based sessions trade revocation for speed. A server-side session record can be killed instantly — delete it and the user is out. A JWT stays valid until it expires, no matter what happens to the account in the meantime. That's the deal Supabase Auth makes, and I took it knowingly for a product where sign-in speed is felt on every page and account compromise is rare.
 
-The other cost is coupling. NextAuth is provider-agnostic; Supabase Auth ties identity to the same platform that holds my data. If I ever leave Supabase, I'm doing an auth migration again. I took that deal with open eyes: I was already committed to Supabase for Postgres, and having done one auth migration, I know the shape of the work. It's a real cost, but a known one.
+What bounds the damage is token lifetime and refresh behavior, which is configuration rather than architecture. <Todo>token lifetime and whether refresh rotation is on — that sets the real blast radius.</Todo> Until that's written down, "short-lived" is a word, not a number.
+
+The other cost is coupling. NextAuth is provider-agnostic; Supabase Auth ties identity to the same platform that holds the data. If I ever leave Supabase, I'm doing an auth migration again. I took that deal with open eyes: I was already committed to Supabase for Postgres, and having done one auth migration, I know the shape of the work. It's a real cost, but a known one.
 
 ## Demo
 
-A recording would show the full loop as a user sees it: signing up, landing in the app, [TODO: the core action a user takes in Dropit], then signing out and back in — with the browser's network panel open during authenticated navigation to show that page loads aren't paying an auth round trip.
+A recording would show the loop as a user sees it: signing in, then the thing the product is actually for — a set of products compared across domains with the best margin surfaced. <Todo>how products get into the tracked set, and what the comparison view shows.</Todo>
 
-[TODO: demo recording]
+I'd also want it to cover authenticated navigation, since sign-in speed is the engineering claim on this page and a demo that skips it is arguing for itself. <Todo>whether there's a before/after worth showing, or just current behavior.</Todo>
+
+<TodoBlock />

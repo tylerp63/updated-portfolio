@@ -32,7 +32,7 @@ export const heroCards = [
   },
   {
     value: "1",
-    label: "iOS app on real hardware",
+    label: "iOS app reading vitals from video",
     bg: "#0c6b34",
     fg: "#f0f7f2",
   },

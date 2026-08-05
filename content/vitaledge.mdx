@@ -1,40 +1,42 @@
 ## Problem
 
-Every simulator lies to you. It has perfect connectivity, clean data, and no battery. I built VitalEdge because I wanted one project in my portfolio where the app is only correct if it works against a physical device — no mocks standing in for the hard part. VitalEdge is an iOS app, written in SwiftUI, that connects to [TODO: what the hardware is and what the app reads from it] and turns its raw output into something a person can actually read on their phone.
+A readiness score — the "train hard today or back off" number — normally costs you a wearable. Something to buy, charge, wear overnight, and remember to put back on. VitalEdge is a SwiftUI iOS app that gets to the same answer from the phone you already own: you take a recording of yourself, the app reads your vitals from it, and it gives you a physical and mental readiness check before you start your day.
 
-The problem isn't rendering the data. It's everything upstream of the view: a device that disconnects mid-session, readings that arrive malformed or out of order, and an OS that will happily suspend your app while the hardware keeps transmitting.
+The hard part isn't showing the number. Reading vitals from video means reading light — the small color shifts in skin as blood moves through it — and that technique is inherently sensitive to things a normal app never has to think about. Room lighting. Whether the subject held still. Camera angle. Distance. A wearable sidesteps all of it by being strapped to you; it gets a clean signal for free. A camera has to earn the same signal from whatever the room happens to give it.
 
 ## Approach
 
-I treated the device connection as the product, not as a data source. Concretely, that meant designing for four failure modes the simulator never shows you:
+The signal extraction comes from the [Presage](https://presagetech.com/) SDK, which turns a video capture into vitals. <Todo>which vitals it returns, and which ones you actually use.</Todo> That boundary was deliberate: measuring physiology from video is an open research problem, and rolling my own would have been the kind of thing that looks impressive in a repo and is wrong in production. Buy the research problem, own the product around it.
 
-- **Session lifecycle.** The [TODO: connectivity protocol, e.g. BLE] link drops constantly in the real world — range, interference, the phone locking. Connection state is an explicit state machine (scanning, connecting, streaming, reconnecting, failed), not a boolean, and every view renders something sensible in every one of those states.
-- **Flaky data.** Real hardware sends garbage sometimes: partial frames, out-of-range values, duplicates after a reconnect. Every reading passes through a validation layer before it touches app state, and rejected frames get counted rather than silently dropped, so I could see how noisy the device actually was.
-- **Async streams in SwiftUI.** Device output is modeled as an AsyncStream consumed by a single observable session store. Views never talk to the connection layer; they render the store. That kept Swift concurrency honest and made "what happens if a reading arrives mid-reconnect" a question with one answer instead of five.
-- **Testing without the device.** I had [TODO: how many hardware units] on my desk, and it can't ride along in CI. More on that below.
+What that leaves is a set of problems the SDK does not solve for you.
+
+- **Capture conditions are a UX problem before they are a data problem.** You cannot repair a bad recording after the fact; you can only ask for another one, and every retake is a tax on someone who is trying to get out the door. <Todo>what the app does about capture conditions, if anything — coaching, retakes, or nothing yet.</Todo>
+- **A derived number has to be legible to be trusted.** Readiness isn't measured, it's computed from things that are, and a bare score with no way to see what drove it is how health apps lose people. <Todo>how readiness is computed — which inputs, weighted how, against what baseline.</Todo>
+- **The input is a living person, which makes automated testing genuinely awkward.** You can't check a heartbeat into a repo. <Todo>how you test this, if at all.</Todo>
 
 ## Architecture
 
+What I can state plainly is short:
+
 ```mermaid
 flowchart LR
-  HW[Physical device] --> Link[Connection manager]
-  Link --> Source[Device source protocol]
-  Sim[Scripted fake device] --> Source
-  Source --> Parser[Frame parser]
-  Parser --> Validate[Reading validator]
-  Validate --> Store[Session store]
-  Store --> Views[SwiftUI views]
-  Store --> History[Session history]
+  User[User records themselves] --> Cam[Camera capture]
+  Cam --> SDK[Presage SDK]
+  SDK --> Vitals[Vitals]
+  Vitals --> Readiness[Readiness check]
+  Readiness --> Views[SwiftUI views]
 ```
 
-The one architectural decision that mattered: everything downstream of the connection manager depends on a small device-source protocol, not on framework types. The real implementation wraps [TODO: the iOS framework used, e.g. CoreBluetooth]; the fake is a scripted device that can replay recorded sessions, inject malformed frames, and disconnect on cue. The parser, validator, and session store never know which one they're talking to.
+<Todo>the layers between the SDK and the views — where a reading lives once Presage hands it back, whether anything persists, and whether anything sits between the vendor's types and the rest of the app.</Todo> That last one is the piece I would want a reviewer to ask about, because a vendor SDK sitting in the middle of an app is either a seam you can swap or a dependency wired through everything, and which one it is only shows up when you try to change it.
 
 ## Key tradeoff
 
-That seam costs something. A scripted fake will never reproduce real radio behavior — timing jitter, the OS tearing the connection down under it, the device's quirks after a power cycle — so a whole class of bugs only ever shows up with the hardware physically on the desk. I accepted that. In exchange, parsing, validation, and every state transition in the session store are covered by fast unit tests that run in CI with nothing plugged in, and hardware time gets spent only on the bugs that genuinely need hardware. The alternative — manually testing everything against the device — is how my first week on this project went, and it doesn't scale past one developer with one unit.
+Camera instead of wearable is the whole bet, and it cuts both ways. It removes every adoption barrier — no purchase, no charging, no strap — which is the entire reason the app is worth building. What it gives up is continuity. A wearable samples you all night and all day; a recording tells you about the moment you took it, under the conditions you took it in. That is a thinner dataset, and no amount of good engineering downstream makes it thicker.
+
+So I would rather the product be narrow than oversell. "How ready are you right now, given a good capture" is a real question worth answering honestly. <Todo>the limitation you decided to state in-product, and where the user sees it.</Todo> The temptation with health data is to present an inferred number with the same confidence as a measured one. A readiness score that quietly overstates itself is worse than no score, because someone makes real decisions about their day on top of it.
 
 ## Demo
 
-The recording shows the app on a physical iPhone sitting next to the hardware: pairing from a cold start, live readings streaming into the SwiftUI dashboard, then me deliberately killing the connection ([TODO: how — powering the device off or walking out of range]) and the app riding through it — the reconnecting state shown honestly, no stale data presented as live, and the stream resuming without a restart.
+A recording would show a full morning check on a physical iPhone: opening the app, taking the capture, and the vitals and readiness result coming back. <Todo>whether you can also show a degraded capture, and what the app does with one.</Todo>
 
-[TODO: demo recording]
+<TodoBlock />

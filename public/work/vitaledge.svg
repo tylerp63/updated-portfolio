@@ -4,7 +4,7 @@
     fill="none" stroke="rgba(240,247,242,1)" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
   <polyline points="470,300 520,300 545,240 580,360 610,270 635,300 752,300"
     fill="none" stroke="rgba(240,247,242,0.35)" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-  <text x="48" y="86" font-family="Helvetica, Arial, sans-serif" font-size="17" letter-spacing="4" fill="rgba(240,247,242,1)">03 — IOS · HARDWARE</text>
+  <text x="48" y="86" font-family="Helvetica, Arial, sans-serif" font-size="17" letter-spacing="4" fill="rgba(240,247,242,1)">03 — IOS · HEALTH</text>
   <text x="42" y="520" font-family="'Arial Narrow', 'Helvetica Neue Condensed', Impact, sans-serif" font-size="112" font-weight="700" letter-spacing="-2" fill="#f0f7f2">VITALEDGE</text>
   <line x1="48" y1="548" x2="752" y2="548" stroke="rgba(240,247,242,0.4)" stroke-width="2"/>
 </svg>

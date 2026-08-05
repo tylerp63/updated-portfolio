@@ -1,41 +1,42 @@
 ## Problem
 
-StudyMonkey is an AI-powered study tool that [TODO: one sentence on what it does for students — e.g. turns course material into practice questions, flashcards, or explanations]. It is deployed and has real users — [TODO: user count and who they are] — which matters to me more than any feature list. A project nobody uses teaches you about code; a project with users teaches you about software.
+StudyMonkey is an AI study tool. A student brings their own documents, asks questions against them, and gets flashcards back out of the same material. It is deployed and has real users — <Todo>user count and who they are</Todo> — which matters to me more than any feature list. A project nobody uses teaches you about code; a project with users teaches you about software.
 
-The hard constraint of the domain is that wrong answers are worse than no answers. A chatbot that hallucinates a plausible fact is annoying. A study tool that does it teaches someone the wrong thing the night before an exam. That constraint shaped almost every decision below.
+The hard constraint of the domain is that wrong answers are worse than no answers. A chatbot that invents a plausible fact is annoying. A study tool that does it teaches someone the wrong thing the night before an exam. Everything below is downstream of that.
 
 ## Approach
 
-The first decision any LLM product forces is how much of the model's context you control. I could pack everything into a carefully built prompt, or add retrieval so the model only sees the material relevant to the request. I went with [TODO: prompt-only, retrieval, or hybrid — what StudyMonkey actually does] because [TODO: the reason — size of typical study material, early quality testing, cost]. This choice looks academic until you watch output quality change as the context fills up.
+The first decision any LLM product forces is how much of the model's context you control. Course material is routinely longer than a context window you want to pay for, and every way out is a tradeoff: send everything and eat the cost, pull only the passages that look relevant and risk skipping the one that mattered, or condense ahead of time and inherit whatever the condensing dropped. LangChain is the orchestration layer here; it makes any of those cheap to build, which also means it decides none of them for you. <Todo>which of these StudyMonkey does to get document text in front of the model, and what pushed you there.</Todo>
 
-Second, budgets. Every request to a hosted model costs real money and real time, and a student will not wait long for a page to do something. I set a per-request budget — [TODO: target latency and cost ceiling] — and made the choices needed to stay under it: [TODO: e.g. model tier, streaming output, caching repeated generations].
+Second, budgets. Model calls are not free and not instant, and a student will not sit and watch a page think. Cost and latency are design inputs in a product like this, not numbers you measure afterward and apologize for. <Todo>whether you set an explicit per-request cost or latency target, and what you traded to hold it — model tier, streaming, caching repeated generations.</Todo>
 
-Third, evals. "It looked fine when I tried it" is not quality checking. Before trusting any prompt change, I ran it against [TODO: the eval setup — a fixed set of representative inputs, a rubric, regression checks before deploys]. It is a small harness, but it caught changes that read as improvements and quietly degraded output.
+Third, quality checking. "It looked fine when I tried it" does not survive a prompt change. Model output moves in ways that read as an improvement on the two examples you have open and quietly degrade on the cases you are not looking at. The only defense I know is a fixed set of inputs you re-run before shipping rather than after a complaint. <Todo>whether you have anything like this today — fixed inputs, a rubric, a check before deploys — and what it has caught.</Todo>
 
 ## Architecture
 
-The web side is TypeScript: a Next.js app with Supabase handling [TODO: what Supabase handles — auth, Postgres, file storage]. The AI side is Python: a service that owns prompt construction, calls to [TODO: model and provider], and post-processing before anything reaches a student. Keeping model logic out of the web app was deliberate — prompts change far more often than UI, and I wanted to iterate on them without touching the frontend.
+Two languages, split along the seam where change happens. The web side is a TypeScript web app. The AI side is Python, with LangChain as the orchestration layer, calling a model <Todo>which model and provider.</Todo> Supabase is the third piece <Todo>what Supabase handles — auth, Postgres, document storage — and which side talks to it.</Todo> The edges above are drawn undirected because the integration path is exactly what I'd want to confirm before drawing an arrow. <Todo>how the web side and the Python side actually talk — HTTP, a queue, or something else.</Todo>
+
+Keeping the model work out of the web app is the part I would defend hardest. Prompts and chains change far more often than screens do, and I did not want a prompt experiment to mean a frontend deploy. It also lets the two halves be reasoned about separately: the web app has a normal product's failure modes, and the Python side has an LLM's.
 
 ```mermaid
 flowchart LR
-  A[Student] --> B[Next.js web app]
-  B --> C[API layer]
-  C --> D[(Supabase)]
-  C --> E[Python AI service]
-  E --> F[Prompt builder]
-  F --> G[LLM provider]
-  G --> H[Output checks]
-  H --> C
+  S[Student] --> W[TypeScript web app]
+  W --- P[Python AI side on LangChain]
+  P --- M[Model]
+  W --- DB[(Supabase)]
+  P --- DB
 ```
 
 ## Key tradeoff
 
-The tradeoff I spent the most time on: hallucination safety versus cost and latency. The safest pipeline verifies every generation — grounding checks against source material, a second model pass, aggressive filtering. Each of those steps adds seconds and cents to every request, and past a point students just leave.
+The tradeoff I keep coming back to is hallucination safety against cost and latency. The safest version of a pipeline like this checks its own work: constrain every claim to the source text, run a second model pass over the output, filter hard on anything unsupported. Each of those steps adds seconds and cents to every request, and past some point a student closes the tab and opens the PDF instead. None of them drives the error rate to zero either — they make errors rarer and change which kinds get through.
 
-I landed on [TODO: the actual mitigation — constraining generation to provided material, second-pass checks only on flagged output, visible sourcing] and accepted [TODO: what that cost — added latency, higher per-request spend, or a known residual error mode]. I also decided to be honest in the product rather than pretend the error rate is zero: [TODO: what the user sees — source attribution, a report control, wording that explains the failure mode]. Some errors still get through. Knowing which kinds, and making them cheap for a student to catch, was the real work.
+<Todo>where you actually landed — what constrains generation, whether anything checks the output, and what that cost in latency or spend.</Todo>
+
+What I am confident about is the framing. Pretending the error rate is zero is the worse failure, because it puts the burden of doubt on someone studying precisely because they do not know the material yet. A tool that shows where an answer came from makes it cheap to catch being wrong. A confident voice with nothing behind it makes the same error unfalsifiable.
 
 ## Demo
 
-A demo recording would show the full loop as a student sees it: signing in, [TODO: providing material — upload or paste], generating [TODO: the output type], and the result streaming back inside the latency budget. It would also show the unhappy path — what appears when a generation is flagged or fails — because that is the part of an LLM product most demos hide.
+A recording would show the loop a student actually runs: <Todo>getting material in — upload or paste,</Todo> asking a question against it, then generating a deck from the same material. It would also show the unhappy path, because that is the part of an LLM product most demos hide. <Todo>what a student sees when a generation fails or the tool has no good answer.</Todo>
 
-[TODO: demo recording]
+<TodoBlock />

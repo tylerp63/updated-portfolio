@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://tylerpham.dev"),
   title: "Tyler Pham — Software Engineer",
   description:
-    "Software engineer building full-stack web apps, AI systems, and iOS. Three products in production — real users, real hardware.",
+    "Software engineer building full-stack web apps, AI systems, and iOS. Three products in production, with real users.",
 };
 
 export default function RootLayout({
