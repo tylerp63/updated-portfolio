@@ -14,9 +14,9 @@ export const projects: Project[] = [
     // Named without the TLD so the product name survives a domain change.
     title: "Dropit",
     oneLiner:
-      "A production Next.js and Supabase web app; migrating auth off NextAuth halved auth-related latency.",
+      "Scrapes and compares 1,000s of products to find the best margin; migrating auth off NextAuth halved auth latency.",
     tag: "Full-stack · Web",
-    stack: ["Next.js", "TypeScript", "Tailwind", "Supabase"],
+    stack: ["Next.js", "TypeScript", "Supabase", "PostgreSQL", "Puppeteer"],
     cover: "/work/dropit.svg",
     links: [{ label: "Live", href: "https://drop-it-lake.vercel.app/" }],
   },
@@ -24,11 +24,10 @@ export const projects: Project[] = [
     slug: "studymonkey",
     title: "StudyMonkey",
     oneLiner:
-      "An AI study tool in production: talk with your own course documents, walk away with flashcards.",
+      "An AI study tool serving 1,100+ students: turn a PDF into a chat session and a flashcard deck.",
     tag: "AI systems",
-    // Only what Tyler confirmed for this project — no Next.js (he specified
-    // TypeScript), and Supabase is unconfirmed here. See CONTENT-TODO.md.
-    stack: ["TypeScript", "Python", "LangChain"],
+    // Per the résumé: a Streamlit app, not a TypeScript one. No Supabase here.
+    stack: ["Python", "Streamlit", "LangChain", "FAISS"],
     cover: "/work/studymonkey.svg",
     // TODO: live URL — see CONTENT-TODO.md
     links: [],
@@ -37,10 +36,20 @@ export const projects: Project[] = [
     slug: "vitaledge",
     title: "VitalEdge",
     oneLiner:
-      "A SwiftUI iOS app that reads your vitals from a camera recording and scores how ready you are for the day.",
+      "A SwiftUI iOS app streaming heart rate, HRV, and breathing from a camera — scored into a daily readiness number.",
     tag: "iOS · Health",
-    stack: ["Swift", "SwiftUI", "Presage SDK"],
+    stack: ["Swift", "SwiftUI", "SmartSpectra SDK"],
     cover: "/work/vitaledge.svg",
+    links: [],
+  },
+  {
+    slug: "guess-the-celebrity",
+    title: "Guess the Celebrity",
+    oneLiner:
+      "A live multiplayer Roblox game shipped solo to 9,000+ players, with a server-authoritative economy.",
+    tag: "Games · Full-stack",
+    stack: ["Luau", "Roblox Studio", "Blender"],
+    cover: "/work/guess-the-celebrity.svg",
     links: [],
   },
 ];

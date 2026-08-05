@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#4c1d95"/>
+  <g fill="none" stroke="rgba(240,235,255,0.35)" stroke-width="3">
+    <rect x="470" y="90" width="90" height="90" rx="10"/>
+    <rect x="580" y="90" width="90" height="90" rx="10"/>
+    <rect x="690" y="90" width="90" height="90" rx="10"/>
+    <rect x="470" y="200" width="90" height="90" rx="10"/>
+    <rect x="690" y="200" width="90" height="90" rx="10"/>
+  </g>
+  <rect x="580" y="200" width="90" height="90" rx="10" fill="rgba(240,235,255,0.9)"/>
+  <text x="625" y="264" font-family="'Arial Narrow', Impact, sans-serif" font-size="62" font-weight="700" fill="#4c1d95" text-anchor="middle">?</text>
+  <text x="48" y="86" font-family="Helvetica, Arial, sans-serif" font-size="17" letter-spacing="4" fill="rgba(240,235,255,1)">04 — GAMES · FULL-STACK</text>
+  <text x="42" y="500" font-family="'Arial Narrow', 'Helvetica Neue Condensed', Impact, sans-serif" font-size="88" font-weight="700" letter-spacing="-2" fill="#f0ebff">GUESS THE</text>
+  <text x="42" y="560" font-family="'Arial Narrow', 'Helvetica Neue Condensed', Impact, sans-serif" font-size="88" font-weight="700" letter-spacing="-2" fill="#f0ebff">CELEBRITY</text>
+</svg>
