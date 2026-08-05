@@ -24,14 +24,23 @@ marker is gone you can delete that file and its two entries in
       `dropit.io` guess did not resolve and is gone. The project stays titled
       just "Dropit" so the name survives a future custom domain.
 - [ ] **StudyMonkey's live URL** — never supplied; `links` is empty.
+- [ ] **Guess the Celebrity's Roblox URL** — the game is live with 9,000+
+      users but no link was supplied; `links` is empty. This is the easiest
+      proof point on the site to make clickable.
+- [x] **Résumé** — replaced 2026-08-05 with Tyler's real PDF (the generated
+      placeholder is gone). The current version says **Expected May 2028**,
+      which matches the hero card; an earlier draft said 2027 and is
+      superseded. It also drops Loli Volleyball and adds Guess the Celebrity.
 - [ ] **Domain** — `tylerpham.dev` is a guess. Update `metadataBase` in
       [app/layout.tsx](app/layout.tsx), [app/sitemap.ts](app/sitemap.ts),
       [app/robots.ts](app/robots.ts).
 - [x] **GitHub / LinkedIn URLs** — real URLs supplied and reachable
       (`github.com/tylerp63` returns 200; LinkedIn's 999 is its standard
       anti-bot response to non-browser requests, not a broken link).
-- [ ] **Resume** — `public/resume.pdf` is a generated draft placeholder.
-      Replace with the real PDF.
+- [ ] **Covers** — `public/work/*.svg` are still typographic placeholders, now
+      four of them. Real screenshots would lift the work list more than any
+      copy change; the Roblox game and Dropit's comparison view are the two
+      most worth capturing.
 
 ## Verified during the review pass (no action needed)
 
@@ -85,17 +94,31 @@ higher than they were in the first draft — see the de-fabrication note below.
 
 ## Hero metric cards ([content/site.ts](content/site.ts))
 
-Real today: `-50% auth latency` (measured), `3 products in production`,
-`1 iOS app reading vitals from video`, `100% shipped to prod` (tongue-in-cheek
-but true).
-Candidates from the drafts once you have numbers: active users on Dropit,
-students on StudyMonkey, p95 latency figures.
+Now three credential cards, all confirmed by Tyler: `CS / Computer Science,
+Texas A&M`, `2028 / Class of`, `SWE / Aggie Coding Club`.
+
+These replaced the original achievement metrics (`-50% auth latency`,
+`3 products in production`, `100% shipped to prod`, `1 iOS app reading vitals
+from video`). Worth a second look before launch: the brief that started this
+site said the positioning is "engineer who ships, not student with projects,"
+and credentials pull the other way — every CS undergrad has a major and a
+grad year, while `-50% auth latency` is Tyler's alone. The `-50%` card in
+particular was the site's single strongest proof point and is the one thing
+a recruiter can't get from a résumé header.
+
+A mixed set is the obvious compromise if you want both: keep `CS` and `2028`,
+drop `SWE` (the role is already in the Experience section a screen below),
+and restore `-50%` and `3 products in production`. The card component takes
+any number of cards — the scatter positions cycle, and an odd count makes the
+last card span both columns on mobile.
 
 ## Experience blurbs ([content/site.ts](content/site.ts))
 
 - Handshake AI: verify wording of what the fellowship involved; add dates if
   you want them.
-- Aggie Coding Club: role (member? officer?), what you built there.
+- Aggie Coding Club: role confirmed as Software Engineer. Still needed: what
+  you actually built there — the blurb is generic and it's the weakest line
+  on the page.
 
 ## Covers (`public/work/*.svg`)
 
